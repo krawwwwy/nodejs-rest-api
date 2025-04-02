@@ -1,9 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const app = express();
 
 // Подключение маршрутов
-const itemsRoutes = require('./routes/itemsRoutes');
+const travelRoutes = require('./routes/travelRoutes');
 
 // Middleware для обработки JSON
 app.use(express.json());
@@ -12,20 +13,26 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Подключение маршрутов API
-app.use('/api', itemsRoutes);
+app.use('/api', travelRoutes);
 
-// Обработка корневого пути (если нужно отдавать index.html)
+// Обработка корневого пути
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Обработка ошибки 404 (если маршрут не найден)
+// Обработка ошибки 404
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
+// Обработка ошибок сервера
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal server error' });
+});
+
 // Запуск сервера
-const port = 3000;
+const port = process.env.SERVER_PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

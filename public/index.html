@@ -3,33 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Web Client</title>
+    <title>Travel Routes Platform</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .item { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .route { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; background: #f9f9f9; }
         .actions { margin-top: 10px; }
         button { padding: 5px 10px; margin-right: 5px; cursor: pointer; }
-        input { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-        #itemForm { margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 5px; }
+        input, select { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        #routeForm { margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 5px; }
         .error { color: red; margin-top: 5px; }
+        .difficulty-easy { color: green; }
+        .difficulty-medium { color: orange; }
+        .difficulty-hard { color: red; }
     </style>
 </head>
 <body>
-    <h1>Items Management</h1>
+    <h1>Travel Routes Platform</h1>
     
     <div id="error-message" class="error" style="display: none;"></div>
 
-    <div id="items"></div>
+    <div id="routes"></div>
 
-    <h2>Add New Item</h2>
-    <form id="itemForm">
-        <input type="text" id="name" placeholder="Name" required>
-        <input type="text" id="description" placeholder="Description" required>
-        <button type="submit">Add Item</button>
+    <h2>Add New Travel Route</h2>
+    <form id="routeForm">
+        <input type="text" id="name" placeholder="Route Name" required>
+        <textarea id="description" placeholder="Description" required style="width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; min-height: 80px;"></textarea>
+        <input type="text" id="location" placeholder="Location (Country, Region)" required>
+        <input type="text" id="duration" placeholder="Duration (e.g., 3 days)" required>
+        <select id="difficulty" required>
+            <option value="">Select Difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <button type="submit">Add Route</button>
     </form>
 
     <script>
-        // Display error message
         function showError(message) {
             const errorElement = document.getElementById('error-message');
             errorElement.textContent = message;
@@ -37,88 +47,103 @@
             setTimeout(() => errorElement.style.display = 'none', 5000);
         }
 
-        // Fetch all items from the API
-        async function fetchItems() {
+        async function fetchRoutes() {
             try {
-                const response = await fetch('http://localhost:3000/api/items');
+                const response = await fetch('http://localhost:3000/api/routes');
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const items = await response.json();
-                const itemsContainer = document.getElementById('items');
-                itemsContainer.innerHTML = '';
+                const routes = await response.json();
+                const routesContainer = document.getElementById('routes');
+                routesContainer.innerHTML = '';
                 
-                if (items.length === 0) {
-                    itemsContainer.innerHTML = '<p>No items found</p>';
+                if (routes.length === 0) {
+                    routesContainer.innerHTML = '<p>No travel routes found. Add your first route!</p>';
                     return;
                 }
                 
-                items.forEach(item => {
-                    const itemElement = document.createElement('div');
-                    itemElement.className = 'item';
-                    itemElement.innerHTML = `
-                        <strong>ID:</strong> ${item.id}<br>
-                        <strong>Name:</strong> ${item.name}<br>
-                        <strong>Description:</strong> ${item.description}
+                routes.forEach(route => {
+                    const routeElement = document.createElement('div');
+                    routeElement.className = 'route';
+                    routeElement.innerHTML = `
+                        <strong>ID:</strong> ${route.id}<br>
+                        <strong>Name:</strong> ${route.name}<br>
+                        <strong>Location:</strong> ${route.location}<br>
+                        <strong>Duration:</strong> ${route.duration}<br>
+                        <strong>Difficulty:</strong> <span class="difficulty-${route.difficulty}">${route.difficulty}</span><br>
+                        <strong>Description:</strong> ${route.description}
                         <div class="actions">
-                            <button onclick="updateItem(${item.id})">Update</button>
-                            <button onclick="deleteItem(${item.id})">Delete</button>
+                            <button onclick="updateRoute(${route.id})">Update</button>
+                            <button onclick="deleteRoute(${route.id})">Delete</button>
                         </div>
                     `;
-                    itemsContainer.appendChild(itemElement);
+                    routesContainer.appendChild(routeElement);
                 });
             } catch (error) {
-                console.error('Fetch items error:', error);
-                showError('Failed to load items. Please try again.');
+                console.error('Fetch routes error:', error);
+                showError('Failed to load routes. Please try again.');
             }
         }
 
-        // Add a new item to the API
-        document.getElementById('itemForm').addEventListener('submit', async (e) => {
+        document.getElementById('routeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('name').value;
             const description = document.getElementById('description').value;
+            const location = document.getElementById('location').value;
+            const duration = document.getElementById('duration').value;
+            const difficulty = document.getElementById('difficulty').value;
 
             try {
-                const response = await fetch('http://localhost:3000/api/items', {
+                const response = await fetch('http://localhost:3000/api/routes', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ name, description })
+                    body: JSON.stringify({ name, description, location, duration, difficulty })
                 });
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                document.getElementById('itemForm').reset();
-                fetchItems();
+                document.getElementById('routeForm').reset();
+                fetchRoutes();
             } catch (error) {
-                console.error('Add item error:', error);
-                showError('Failed to add item. Please try again.');
+                console.error('Add route error:', error);
+                showError('Failed to add route. Please try again.');
             }
         });
 
-        // Update an item
-        async function updateItem(id) {
+        async function updateRoute(id) {
             try {
-                const newName = prompt('Enter new name:');
+                const newName = prompt('Enter new route name:');
                 if (newName === null) return;
                 
                 const newDescription = prompt('Enter new description:');
                 if (newDescription === null) return;
+                
+                const newLocation = prompt('Enter new location:');
+                if (newLocation === null) return;
+                
+                const newDuration = prompt('Enter new duration:');
+                if (newDuration === null) return;
+                
+                const newDifficulty = prompt('Enter new difficulty (easy/medium/hard):');
+                if (newDifficulty === null) return;
 
-                const response = await fetch(`http://localhost:3000/api/items/${id}`, {
+                const response = await fetch(`http://localhost:3000/api/routes/${id}`, {
                     method: 'PUT',
                     headers: { 
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ 
                         name: newName, 
-                        description: newDescription 
+                        description: newDescription,
+                        location: newLocation,
+                        duration: newDuration,
+                        difficulty: newDifficulty
                     })
                 });
 
@@ -126,21 +151,20 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                fetchItems();
+                fetchRoutes();
             } catch (error) {
-                console.error('Update item error:', error);
-                showError('Failed to update item. Please try again.');
+                console.error('Update route error:', error);
+                showError('Failed to update route. Please try again.');
             }
         }
 
-        // Delete an item
-        async function deleteItem(id) {
-            if (!confirm('Are you sure you want to delete this item?')) {
+        async function deleteRoute(id) {
+            if (!confirm('Are you sure you want to delete this route?')) {
                 return;
             }
 
             try {
-                const response = await fetch(`http://localhost:3000/api/items/${id}`, { 
+                const response = await fetch(`http://localhost:3000/api/routes/${id}`, { 
                     method: 'DELETE' 
                 });
 
@@ -148,15 +172,14 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                fetchItems();
+                fetchRoutes();
             } catch (error) {
-                console.error('Delete item error:', error);
-                showError('Failed to delete item. Please try again.');
+                console.error('Delete route error:', error);
+                showError('Failed to delete route. Please try again.');
             }
         }
 
-        // Load items on page load
-        document.addEventListener('DOMContentLoaded', fetchItems);
+        document.addEventListener('DOMContentLoaded', fetchRoutes);
     </script>
 </body>
 </html>
