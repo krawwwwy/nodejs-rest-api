@@ -6,18 +6,18 @@ const getAllRoutes = async () => {
   return result.rows;
 };
 
-const addRoute = async (name, description, location, duration, difficulty) => {
+const addRoute = async (name, description, location, duration, rating) => {
   const result = await db.query(
-    'INSERT INTO travel_routes (name, description, location, duration, difficulty) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-    [name, description, location, duration, difficulty]
+    'INSERT INTO travel_routes (name, description, location, duration, rating) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [name, description, location, duration, rating]
   );
   return result.rows[0];
 };
 
-const updateRoute = async (id, name, description, location, duration, difficulty) => {
+const updateRoute = async (id, name, description, location, duration, rating) => {
   const result = await db.query(
-    'UPDATE travel_routes SET name = $1, description = $2, location = $3, duration = $4, difficulty = $5 WHERE id = $6 RETURNING *',
-    [name, description, location, duration, difficulty, id]
+    'UPDATE travel_routes SET name = $1, description = $2, location = $3, duration = $4, rating = $5 WHERE id = $6 RETURNING *',
+    [name, description, location, duration, rating, id]
   );
   return result.rows[0];
 };

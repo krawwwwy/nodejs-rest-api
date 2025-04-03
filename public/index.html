@@ -9,17 +9,15 @@
         .route { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; background: #f9f9f9; }
         .actions { margin-top: 10px; }
         button { padding: 5px 10px; margin-right: 5px; cursor: pointer; }
-        input, select { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        input, select, textarea { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
         #routeForm { margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 5px; }
         .error { color: red; margin-top: 5px; }
-        .difficulty-easy { color: green; }
-        .difficulty-medium { color: orange; }
-        .difficulty-hard { color: red; }
+        .stars { color: gold; font-size: 1.2em; }
     </style>
 </head>
 <body>
     <h1>Travel Routes Platform</h1>
-    
+
     <div id="error-message" class="error" style="display: none;"></div>
 
     <div id="routes"></div>
@@ -27,14 +25,16 @@
     <h2>Add New Travel Route</h2>
     <form id="routeForm">
         <input type="text" id="name" placeholder="Route Name" required>
-        <textarea id="description" placeholder="Description" required style="width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; min-height: 80px;"></textarea>
+        <textarea id="description" placeholder="Description" required></textarea>
         <input type="text" id="location" placeholder="Location (Country, Region)" required>
         <input type="text" id="duration" placeholder="Duration (e.g., 3 days)" required>
-        <select id="difficulty" required>
-            <option value="">Select Difficulty</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
+        <select id="rating" required>
+            <option value="">Select Rating</option>
+            <option value="1">1 Star</option>
+            <option value="2">2 Stars</option>
+            <option value="3">3 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="5">5 Stars</option>
         </select>
         <button type="submit">Add Route</button>
     </form>
@@ -50,20 +50,20 @@
         async function fetchRoutes() {
             try {
                 const response = await fetch('http://localhost:3000/api/routes');
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const routes = await response.json();
                 const routesContainer = document.getElementById('routes');
                 routesContainer.innerHTML = '';
-                
+
                 if (routes.length === 0) {
                     routesContainer.innerHTML = '<p>No travel routes found. Add your first route!</p>';
                     return;
                 }
-                
+
                 routes.forEach(route => {
                     const routeElement = document.createElement('div');
                     routeElement.className = 'route';
@@ -72,7 +72,7 @@
                         <strong>Name:</strong> ${route.name}<br>
                         <strong>Location:</strong> ${route.location}<br>
                         <strong>Duration:</strong> ${route.duration}<br>
-                        <strong>Difficulty:</strong> <span class="difficulty-${route.difficulty}">${route.difficulty}</span><br>
+                        <strong>Rating:</strong> <span class="stars">${'★'.repeat(route.rating)}</span> (${route.rating}/5)<br>
                         <strong>Description:</strong> ${route.description}
                         <div class="actions">
                             <button onclick="updateRoute(${route.id})">Update</button>
@@ -93,15 +93,15 @@
             const description = document.getElementById('description').value;
             const location = document.getElementById('location').value;
             const duration = document.getElementById('duration').value;
-            const difficulty = document.getElementById('difficulty').value;
+            const rating = document.getElementById('rating').value;
 
             try {
                 const response = await fetch('http://localhost:3000/api/routes', {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ name, description, location, duration, difficulty })
+                    body: JSON.stringify({ name, description, location, duration, rating })
                 });
 
                 if (!response.ok) {
@@ -120,30 +120,30 @@
             try {
                 const newName = prompt('Enter new route name:');
                 if (newName === null) return;
-                
+
                 const newDescription = prompt('Enter new description:');
                 if (newDescription === null) return;
-                
+
                 const newLocation = prompt('Enter new location:');
                 if (newLocation === null) return;
-                
+
                 const newDuration = prompt('Enter new duration:');
                 if (newDuration === null) return;
-                
-                const newDifficulty = prompt('Enter new difficulty (easy/medium/hard):');
-                if (newDifficulty === null) return;
+
+                const newRating = prompt('Enter new rating (1-5):');
+                if (newRating === null) return;
 
                 const response = await fetch(`http://localhost:3000/api/routes/${id}`, {
                     method: 'PUT',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
-                        name: newName, 
+                    body: JSON.stringify({
+                        name: newName,
                         description: newDescription,
                         location: newLocation,
                         duration: newDuration,
-                        difficulty: newDifficulty
+                        rating: newRating
                     })
                 });
 

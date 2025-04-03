@@ -11,9 +11,9 @@ const getRoutes = async (req, res) => {
 };
 
 const createRoute = async (req, res) => {
-  const { name, description, location, duration, difficulty } = req.body;
+  const { name, description, location, duration, rating } = req.body;
   try {
-    const newRoute = await travelRouteModel.addRoute(name, description, location, duration, difficulty);
+    const newRoute = await travelRouteModel.addRoute(name, description, location, duration, rating);
     res.status(201).json(newRoute);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
@@ -22,9 +22,9 @@ const createRoute = async (req, res) => {
 
 const updateRoute = async (req, res) => {
   const { id } = req.params;
-  const { name, description, location, duration, difficulty } = req.body;
+  const { name, description, location, duration, rating } = req.body;
   try {
-    const updatedRoute = await travelRouteModel.updateRoute(id, name, description, location, duration, difficulty);
+    const updatedRoute = await travelRouteModel.updateRoute(id, name, description, location, duration, rating);
     res.status(200).json(updatedRoute);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
