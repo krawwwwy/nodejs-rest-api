@@ -6,6 +6,12 @@ const getAllRoutes = async () => {
   return result.rows;
 };
 
+// Добавляем новый метод для получения одного маршрута
+const getRouteById = async (id) => {
+  const result = await db.query('SELECT * FROM travel_routes WHERE id = $1', [id]);
+  return result.rows[0]; // Вернет undefined если маршрут не найден
+};
+
 const addRoute = async (name, description, location, duration, rating) => {
   const result = await db.query(
     'INSERT INTO travel_routes (name, description, location, duration, rating) VALUES ($1, $2, $3, $4, $5) RETURNING *',
@@ -28,6 +34,7 @@ const deleteRoute = async (id) => {
 
 module.exports = {
   getAllRoutes,
+  getRouteById, // Экспортируем новый метод
   addRoute,
   updateRoute,
   deleteRoute

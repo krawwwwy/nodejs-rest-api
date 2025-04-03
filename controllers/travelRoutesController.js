@@ -10,6 +10,19 @@ const getRoutes = async (req, res) => {
   }
 };
 
+// Добавляем новый метод для получения одного маршрута
+const getRoute = async (req, res) => {
+  try {
+    const route = await travelRouteModel.getRouteById(req.params.id);
+    if (!route) {
+      return res.status(404).json({ message: 'Route not found' });
+    }
+    res.status(200).json(route);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 const createRoute = async (req, res) => {
   const { name, description, location, duration, rating } = req.body;
   try {
@@ -25,6 +38,9 @@ const updateRoute = async (req, res) => {
   const { name, description, location, duration, rating } = req.body;
   try {
     const updatedRoute = await travelRouteModel.updateRoute(id, name, description, location, duration, rating);
+    if (!updatedRoute) {
+      return res.status(404).json({ message: 'Route not found' });
+    }
     res.status(200).json(updatedRoute);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
@@ -43,6 +59,7 @@ const deleteRoute = async (req, res) => {
 
 module.exports = {
   getRoutes,
+  getRoute, // Экспортируем новый метод
   createRoute,
   updateRoute,
   deleteRoute
